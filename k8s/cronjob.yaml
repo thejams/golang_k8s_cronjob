@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: trade-made-cronjob
+spec:
+  schedule: "*/2 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: trade-made-cron
+              image: trade-made-cron
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: trade-made-cron-secret
+                      key: API_KEY
+              command:
+                - build/bin/trade_made_cron
+                - date; echo Hello from the Kubernetes cluster
+          restartPolicy: OnFailure
